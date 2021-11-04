@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <title>PDBe Molstar - Helper functions</title>
+
+  <!-- Molstar CSS & JS -->
+  <link rel="stylesheet" type="text/css"
+    href="https://www.ebi.ac.uk/pdbe/pdb-component-library/css/pdbe-molstar-light-1.2.0.css">
+  <script type="text/javascript"
+    src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdbe-molstar-plugin-1.2.0.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .msp-plugin ::-webkit-scrollbar-thumb {
+      background-color: #474748 !important;
+    }
+
+    .viewerSection {
+      margin: 120px 0 0 50px;
+    }
+
+    .searchSection {
+      margin: 10px 0 0 50px;
+    }
+
+    #myViewer {
+      float: left;
+      width: 600px;
+      height: 600px;
+      position: relative;
+    }
+
+    #myViewer1 {
+      float: left;
+      width: 400px;
+      height: 400px;
+      position: relative;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container"></div>
+  <h1>PDBe Mol* AlphaFold Demo</h1>
+  <div class="searchSection">
+    <form id="submitProtein">
+      <input type="text" id="mySearchbar" placeholder="Search Gene Here">
+      <input type="submit">
+    </form>
+    <h3 id='uniprot_info'></h3>
+    <h3 id='protein'></h3>
+    <a id='uniprot'></a> <br>
+    <a id='AlphaFold'></a> <br>
+  </div>
+  <div class="viewerSection">
+    <!-- Molstar container -->
+    <div id="myViewer"></div>
+    <div id="myViewer1"></div>
+
+    <form id="applyColor">
+      <label for="start">Start Residue</label>
+      <input type="number" id="start" name="start" min="0" max="1000">
+      <label for="end">End Residue</label>
+      <input type="number" id="end" name="end" min="0" max="1000">
+      <label for="residueColor">Residue Color</label>
+      <input type="color" id="residueColor" name="residueColor">
+      <input type="submit">
+    </form>
+    <!-- <button id="testButton">Highlight Chain A:14-18</button> -->
+
+
+
+  </div>
+  <script>
+
+    var geneName;
+    var viewerContainer = document.getElementById('myViewer');
+    var viewerInstance = new PDBeMolstarPlugin();
+    var residues = []
+
+    document.getElementById('submitProtein').addEventListener('submit', submission)
+    document.getElementById('applyColor').addEventListener('submit', apply)
+
+    function apply() {
+      event.preventDefault();
+      start = document.getElementById("start").value;
+      end = document.getElementById("end").value;
+      color = document.getElementById("residueColor").value;
+      color = color.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
+        , (m, r, g, b) => '#' + r + r + g + g + b + b)
+        .substring(1).match(/.{2}/g)
+        .map(x => parseInt(x, 16))
+      residues.push({ start_residue_number: start, end_residue_number: end, color: { r: color[0], g: color[1], b: color[2] } })
+      console.log(residues)
+
+      residues.forEach((item) =>
+        viewerInstance.visual.select({
+          data: residues,
+          nonSelectedColor: { r: 255, g: 255, b: 255 }
+        })
+      )
+
+
+
+    }
+
+    function submission() {
+      event.preventDefault();
+
+      geneName = document.getElementById("mySearchbar").value;
+
+      async function getUsers() {
+        try {
+          let res = await fetch('https://www.uniprot.org/uniprot/' + geneName + '_human.txt'
+          )
+          return await res;
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      async function loadFileAndPrintToConsole(url) {
+        try {
+          const response = await fetch(url);
+          const data = await response.text();
+          var myRegexp = /RecName: Full=(.*);/;
+          var match = myRegexp.exec(data);
+          var proteinName = match[1]
+          document.getElementById('protein').innerHTML = proteinName
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function renderUsers() {
+        let info = await getUsers();
+        let uniprot_accession = info.url.split('/').pop().slice(0, -4)
+        loadFileAndPrintToConsole('https://www.uniprot.org/uniprot/' + uniprot_accession + '.txt');
+        document.getElementById('uniprot_info').innerHTML = "UniProt accession: " + uniprot_accession
+        document.getElementById('uniprot').innerHTML = "UniProt"
+        document.getElementById('uniprot').setAttribute('href', 'https://www.uniprot.org/uniprot/' + uniprot_accession);
+        document.getElementById('AlphaFold').innerHTML = "AlphaFold"
+        document.getElementById('AlphaFold').setAttribute('href', 'https://alphafold.ebi.ac.uk/entry/' + uniprot_accession);
+
+        //Set options (Checkout available options list in the documentation)
+        var options = {
+          customData: {
+            url: 'https://alphafold.ebi.ac.uk/files/AF-' + uniprot_accession + '-F1-model_v1.cif',
+            format: 'cif'
+          },
+          // visualStyle: 'ball-and-stick',
+          alphafoldView: true,
+          bgColor: { r: 255, g: 255, b: 255 },
+          hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo']
+        }
+
+        //Call render method to display the 3D view
+        viewerInstance.render(viewerContainer, options);
+        // viewerInstance.canvas.toggleControls(false);
+
+        viewerInstance.events.loadComplete.subscribe(() => {
+          viewerInstance.visual.select({
+            data: [{ start_residue_number: 0, end_residue_number: 0, color: { r: 255, g: 255, b: 255 } }],
+          });
+        })
+
+
+
+        // document.getElementById('testButton').addEventListener("click", () => {
+        //   viewerInstance.visual.select({
+        //     data: [
+        //       { start_residue_number: 20, end_residue_number: 40, color: { r: 255, g: 0, b: 0 } },
+        //       { start_residue_number: 104, end_residue_number: 125, color: { r: 0, g: 0, b: 255 } }
+        //     ],
+
+        //     nonSelectedColor: { r: 255, g: 255, b: 255 }
+        //   });
+        // })
+
+        var viewerInstance1 = new PDBeMolstarPlugin();
+        var options1 = {
+          customData: {
+            url: 'https://alphafold.ebi.ac.uk/files/AF-' + uniprot_accession + '-F1-model_v1.cif',
+            format: 'cif'
+          },
+          // visualStyle: 'ball-and-stick',
+          alphafoldView: true,
+          bgColor: { r: 255, g: 255, b: 255 },
+          hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo']
+        }
+        // var viewerContainer1 = document.getElementById('myViewer1');
+
+        // viewerInstance1.render(viewerContainer1, options1);
+      }
+
+      renderUsers(viewerInstance);
+
+
+
+    }
+  </script>
+</body>
+
+</html>

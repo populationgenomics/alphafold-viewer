@@ -1,0 +1,42 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-publish:
+    # Run on merge to main
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      BUILDKIT_PROGRESS: plain
+      CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+      DOCKER_NAME: australia-southeast1-docker.pkg.dev/alphafold-331101/images/viewer:${{ github.sha }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@main
+
+      - name: "gcloud setup"
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: alphafold-331101
+          service_account_key: ${{ secrets.GCP_SERVER_DEPLOY_KEY }}
+
+      - name: "gcloud docker auth"
+        run: |
+          gcloud auth configure-docker australia-southeast1-docker.pkg.dev
+
+      - name: "build and push image"
+        run: |
+          docker build --tag $DOCKER_NAME .
+          docker push $DOCKER_NAME
+
+      - name: "deploy to Cloud Run"
+        run: |
+          gcloud run deploy \
+            alphafold-viewer --image $DOCKER_NAME \
+            --region australia-southeast1 --no-allow-unauthenticated \
+            --platform managed

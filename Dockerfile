@@ -20,5 +20,8 @@ RUN npm run build
 FROM builder as src
 FROM httpd:2.4-alpine
 
+# listen on the PORT cloud run asks us to
+RUN echo 'Listen ${PORT}' >> /usr/local/apache2/conf/httpd.conf
+
 # Copy the static website!
 COPY --from=src /usr/src/app/build/ /usr/local/apache2/htdocs/

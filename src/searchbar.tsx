@@ -5,7 +5,7 @@ function Searchbar(props: { setSearchResults: Function }) {
     async function seek(symbol: string) {
         try {
             let res = await fetch(
-                "http://rest.genenames.org/fetch/symbol/" + symbol,
+                "https://rest.genenames.org/fetch/symbol/" + symbol,
                 {
                     headers: {
                         Accept: "application/json",

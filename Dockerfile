@@ -20,6 +20,8 @@ RUN npm run build
 FROM builder as src
 FROM httpd:2.4-alpine
 
+ENV PORT 80
+
 # listen on the PORT cloud run asks us to
 RUN echo 'Listen ${PORT}' >> /usr/local/apache2/conf/httpd.conf
 

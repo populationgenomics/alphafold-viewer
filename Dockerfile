@@ -1,20 +1,24 @@
-FROM alpine:3.13.2
+# Stage 1: build the website
+FROM node:16-buster-slim as builder
 
-# by default listen on 8000
-ENV PORT 8000
-EXPOSE $PORT
+ENV NODE_ENV=production
+WORKDIR /usr/src/app
 
-# Install thttpd
-RUN apk add thttpd
+ADD package.json package-lock.json .
 
-# Create a non-root user to own the files and run our server
-RUN adduser -D static
-USER static
-WORKDIR /home/static
+# Install dependencies
+RUN npm install
 
-# Copy the static website
-# Use the .dockerignore file to control what ends up inside the image!
-COPY demo.html index.html
+COPY public public
+COPY src src
+COPY tsconfig.json .
+RUN npm run build
 
-# Run thttpd
-CMD "thttpd" "-D" "-h" "0.0.0.0" "-p" $PORT "-d" "/home/static" "-u" "static" "-l" "-" "-M" "60"
+# separate docker stage to host the files
+# doing it this way saves many layers
+
+FROM builder as src
+FROM httpd:2.4-alpine
+
+# Copy the static website!
+COPY --from=src /usr/src/app/build/ /usr/local/apache2/htdocs/

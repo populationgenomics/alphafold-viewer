@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - fix-deploy
+
 jobs:
   build-publish:
     # Run on merge to main

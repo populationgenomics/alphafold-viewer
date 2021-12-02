@@ -13,6 +13,7 @@ interface ViewerOptionsProps {
 }
 
 const STYLE_OPTIONS = {
+    // from https://github.com/molstar/molstar/blob/1a8dc2c637c3291986c592ab5a5e911a4e42fd32/src/mol-repr/structure/registry.ts#L38
     cartoon: "Cartoon",
     backbone: "Backbone",
     "ball-and-stick": "Ball And Stick",

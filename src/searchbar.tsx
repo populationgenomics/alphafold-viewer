@@ -21,14 +21,12 @@ const Searchbar: React.FunctionComponent<SearchBarProps> = ({
         );
         const data = await response.json();
         const hits: SearchResultsHits[] = data.hits;
-        const validHits: SearchResultsHits[] = hits.map((item) => {
-            return {
-                ...item,
-                uniprotKey: item.uniprot?.["Swiss-Prot"]
-                    ? item.uniprot?.["Swiss-Prot"]
-                    : "",
-            };
-        });
+        const validHits: SearchResultsHits[] = hits.map((item) => ({
+            ...item,
+            uniprotKey: item.uniprot?.["Swiss-Prot"]
+                ? item.uniprot?.["Swiss-Prot"]
+                : "",
+        }));
         setSearchResults(validHits.filter((item) => item.uniprotKey));
     };
 

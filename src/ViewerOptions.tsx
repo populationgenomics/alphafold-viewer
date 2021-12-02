@@ -12,6 +12,23 @@ interface ViewerOptionsProps {
     plugin: React.MutableRefObject<PluginContext | null>;
 }
 
+const STYLE_OPTIONS = {
+    cartoon: "Cartoon",
+    backbone: "Backbone",
+    "ball-and-stick": "Ball And Stick",
+    carbohydrate: "Carbohydrate",
+    ellipsoid: "Ellipsoid",
+    "gaussian-surface": "Gaussian Surface",
+    "guassian-volume": "Gaussian Volume",
+    label: "Label",
+    line: "Line",
+    "molecular-surface": "Molecular Surface",
+    orientation: "Orientation",
+    point: "Point",
+    putty: "Putty",
+    spacefill: "Spacefill",
+};
+
 const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
     plugin,
 }) => {
@@ -21,20 +38,24 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
         event.preventDefault();
         const form = event.currentTarget;
         const formElements = form.elements as typeof form.elements & {
-            start: { value: number };
-            end: { value: number };
-            // colourPicker: { value: string };
+            start: { value: string };
+            end: { value: string };
             name: { value: string };
             style: { value: string };
         };
+        const start = parseInt(formElements.start.value);
+        const end = parseInt(formElements.end.value);
         const range = Array.from(
-            { length: formElements.end.value - formElements.start.value },
-            (v, k) => k + Number(formElements.start.value)
+            { length: end - start },
+            (_, idx) => idx + start
         );
         const data =
             plugin.current!.managers.structure.hierarchy.current.structures[0]
                 ?.cell.obj?.data;
-        if (!data) return;
+        if (!data) {
+            alert("Problem with data, try to reload viewer.");
+            return;
+        }
 
         const currentSelection = StructureSelectionQuery(
             "",
@@ -58,19 +79,25 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
         event.preventDefault();
         const form = event.currentTarget;
         const formElements = form.elements as typeof form.elements & {
-            start: { value: number };
-            end: { value: number };
+            start: { value: string };
+            end: { value: string };
             colourPicker: { value: string };
         };
+        const start = parseInt(formElements.start.value);
+        const end = parseInt(formElements.end.value);
         const range = Array.from(
-            { length: formElements.end.value - formElements.start.value },
-            (v, k) => k + Number(formElements.start.value)
+            //creates an array of all numbers in [start, end]
+            { length: end - start },
+            (_, idx) => idx + start
         );
 
         const data =
             plugin.current!.managers.structure.hierarchy.current.structures[0]
                 ?.cell.obj?.data;
-        if (!data) return;
+        if (!data) {
+            alert("Problem with data, try to reload viewer.");
+            return;
+        }
 
         const selection = Script.getStructureSelection(
             (Q) =>
@@ -101,13 +128,13 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
         }
     }
 
-    const inputStyle = {
+    const inputStyle: React.CSSProperties = {
         width: 200,
         // marginBottom: 10,
         padding: 2,
     };
 
-    const labelStyle = {
+    const labelStyle: React.CSSProperties = {
         display: "block",
         width: 50,
     };
@@ -134,24 +161,11 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
                 <label style={labelStyle}>
                     Style
                     <select id="style" style={inputStyle}>
-                        <option value="cartoon">Cartoon</option>
-                        <option value="backbone">Backbone</option>
-                        <option value="ball-and-stick">Ball And Stick</option>
-                        <option value="carbohydrate">Carbohydrate</option>
-                        <option value="ellipsoid">Ellipsoid</option>
-                        <option value="gaussian-surface">
-                            Gaussian Surface
-                        </option>
-                        <option value="guassian-volume">Gaussian Volume</option>
-                        <option value="label">Label</option>
-                        <option value="line">Line</option>
-                        <option value="molecular-surface">
-                            Molecular Surface
-                        </option>
-                        <option value="orientation">Orientation</option>
-                        <option value="point">Point</option>
-                        <option value="putty">Putty</option>
-                        <option value="spacefill">Spacefill</option>
+                        {Object.entries(STYLE_OPTIONS).map(([key, label]) => (
+                            <option key={key} value={key}>
+                                {label}
+                            </option>
+                        ))}
                     </select>
                 </label>
                 <br />

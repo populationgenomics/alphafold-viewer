@@ -25,18 +25,16 @@ const VisualisationApp: React.FunctionComponent = () => {
                 <div className="searchArea">
                     <Searchbar setSearchResults={setSearchResults}></Searchbar>
                 </div>
-                <div className="searchResults">
-                    {searchResults && (
-                        <>
-                            <h4>Results</h4>
-                            <SearchResults
-                                searchResults={searchResults}
-                                url={url}
-                                setUrl={setUrl}
-                            ></SearchResults>
-                        </>
-                    )}
-                </div>
+                {searchResults && (
+                    <div className="searchResults">
+                        <h4>Results</h4>
+                        <SearchResults
+                            searchResults={searchResults}
+                            url={url}
+                            setUrl={setUrl}
+                        ></SearchResults>
+                    </div>
+                )}
                 {url && (
                     <>
                         <div className="molstarViewer">

@@ -1,11 +1,28 @@
-import PropTypes from "prop-types";
-import { searchResultsHits } from "./searchResultsHits.interface";
+import * as React from "react";
 
-function SearchResults(props: {
-    searchResults: searchResultsHits[];
+export interface SearchResultsHits {
+    entrezgeneID: string;
+    symbol: string;
+    score: number;
+    _id: string;
+    name: string;
+    uniprot?: {
+        [key: string]: string;
+    };
+    uniprotKey: string;
+}
+
+interface SearchResultsProps {
+    searchResults: SearchResultsHits[];
     url: string;
-    setUrl: Function;
-}) {
+    setUrl: (url: string) => void;
+}
+
+const SearchResults: React.FunctionComponent<SearchResultsProps> = ({
+    searchResults,
+    url,
+    setUrl,
+}) => {
     const buttonStyle = {
         display: "block",
         width: 300,
@@ -14,40 +31,34 @@ function SearchResults(props: {
     };
     return (
         <>
-            {props.searchResults.map((item) => (
+            {searchResults.map((item) => (
                 <button
                     style={buttonStyle}
                     key={item._id}
                     onClick={() =>
-                        props.setUrl(
+                        setUrl(
                             "https://alphafold.ebi.ac.uk/files/AF-" +
-                                item.uniprot +
+                                item.uniprotKey +
                                 "-F1-model_v1.cif"
                         )
                     }
-                    disabled={props.url !== ""}
+                    disabled={url !== ""}
                 >
                     {item.name} <br />
                     {item.symbol} <br />
-                    {item.uniprot}
+                    {item.uniprotKey}
                 </button>
             ))}
             <button
                 key={"-1"}
                 style={buttonStyle}
-                onClick={() => props.setUrl("")}
-                disabled={!props.url}
+                onClick={() => setUrl("")}
+                disabled={!url}
             >
                 Clear
             </button>
         </>
     );
-}
-
-SearchResults.propTypes = {
-    searchResults: PropTypes.array.isRequired,
-    url: PropTypes.string.isRequired,
-    setUrl: PropTypes.func.isRequired,
 };
 
 export default SearchResults;

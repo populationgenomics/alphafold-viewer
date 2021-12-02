@@ -1,24 +1,13 @@
-import PropTypes from "prop-types";
-import { searchResultsHits } from "./searchResultsHits.interface";
+import * as React from "react";
+import { SearchResultsHits } from "./SearchResults";
 
-function Searchbar(props: { setSearchResults: Function }) {
-    async function seek(symbol: string) {
-        try {
-            let res = await fetch(
-                "https://rest.genenames.org/fetch/symbol/" + symbol,
-                {
-                    headers: {
-                        Accept: "application/json",
-                    },
-                }
-            );
-            let data = await res.json();
-            return await data.response.docs["0"].uniprot_ids[0];
-        } catch (error) {
-            return null;
-        }
-    }
+interface SearchBarProps {
+    setSearchResults: (validHits: SearchResultsHits[]) => void;
+}
 
+const Searchbar: React.FunctionComponent<SearchBarProps> = ({
+    setSearchResults,
+}) => {
     const handleSearch = async (
         event: React.SyntheticEvent<HTMLFormElement>
     ) => {
@@ -28,17 +17,19 @@ function Searchbar(props: { setSearchResults: Function }) {
             searchTerm: { value: string };
         };
         const response = await fetch(
-            `https://mygene.info/v3/query?q=${formElements.searchTerm.value}&fields=symbol%2C%20name%2C%20entrezgene&species=human&size=10&entrezonly=true`
+            `https://mygene.info/v3/query?q=${formElements.searchTerm.value}&fields=symbol%2C%20name%2C%20uniprot&species=human&size=10&entrezonly=true`
         );
         const data = await response.json();
-        const hits: searchResultsHits[] = data.hits;
-        const validHits: searchResultsHits[] = await Promise.all(
-            hits.map(async function (item) {
-                let id = await seek(item.symbol);
-                return { ...item, uniprot: id };
-            })
-        );
-        props.setSearchResults(validHits.filter((item) => item.uniprot));
+        const hits: SearchResultsHits[] = data.hits;
+        const validHits: SearchResultsHits[] = hits.map((item) => {
+            return {
+                ...item,
+                uniprotKey: item.uniprot?.["Swiss-Prot"]
+                    ? item.uniprot?.["Swiss-Prot"]
+                    : "",
+            };
+        });
+        setSearchResults(validHits.filter((item) => item.uniprotKey));
     };
 
     return (
@@ -52,10 +43,6 @@ function Searchbar(props: { setSearchResults: Function }) {
             </form>
         </>
     );
-}
-
-Searchbar.propTypes = {
-    setSearchResults: PropTypes.func.isRequired,
 };
 
 export default Searchbar;

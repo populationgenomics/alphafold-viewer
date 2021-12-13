@@ -13,6 +13,7 @@ interface ViewerProps {
     plugin: React.MutableRefObject<PluginContext | null>;
 }
 
+// TODO Fiddle with these settings later (changes UI)
 // const viewerOptions = {
 //     layoutIsExpanded: false,
 //     layoutShowControls: true,
@@ -45,12 +46,14 @@ const Viewer: React.FunctionComponent<ViewerProps> = ({ url, plugin }) => {
                 behaviors: [
                     ...defaultSpec.behaviors,
                     PluginSpec.Behavior(AfConfidenceScore, {
+                        //adds alphafold colouring as a colour scheme that the user can select
                         autoAttach: true,
                         showTooltip: true,
                     }),
                 ],
                 layout: defaultSpec.layout,
                 config: [
+                    // TODO: Fiddle with these settings later (changes UI)
                     // [
                     //     PluginConfig.General.DisableAntialiasing,
                     //     viewerOptions.disableAntialiasing,
@@ -89,7 +92,6 @@ const Viewer: React.FunctionComponent<ViewerProps> = ({ url, plugin }) => {
                 ],
             };
             plugin.current = await createPluginAsync(parent.current!, spec);
-            // plugin.current = await createPluginAsync(parent.current!);
             setInitialized(true);
         }
         init();

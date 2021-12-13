@@ -1,3 +1,5 @@
+// from https://github.com/PDBeurope/pdbe-molstar/tree/master/src/app/af-confidence
+
 /* eslint-disable camelcase */
 /* esling-disable no-namespace */
 /**

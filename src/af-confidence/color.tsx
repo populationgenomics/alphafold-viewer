@@ -1,3 +1,4 @@
+// from https://github.com/PDBeurope/pdbe-molstar/tree/master/src/app/af-confidence
 import { Location } from "molstar/lib/mol-model/location";
 import { StructureElement } from "molstar/lib/mol-model/structure";
 import { LocationColor } from "molstar/lib/mol-theme/color";

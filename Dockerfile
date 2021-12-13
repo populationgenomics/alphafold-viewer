@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 ADD package.json package-lock.json .
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 COPY public public
 COPY src src

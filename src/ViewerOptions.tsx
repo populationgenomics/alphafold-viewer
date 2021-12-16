@@ -36,88 +36,93 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
     async function createComponent(
         event: React.SyntheticEvent<HTMLFormElement>
     ) {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const formElements = form.elements as typeof form.elements & {
-            start: { value: string };
-            end: { value: string };
-            name: { value: string };
-            style: { value: string };
-        };
-        const start = parseInt(formElements.start.value);
-        const end = parseInt(formElements.end.value);
-        const range = Array.from(
-            { length: end - start },
-            (_, idx) => idx + start
-        );
-        const data =
-            plugin.current!.managers.structure.hierarchy.current.structures[0]
-                ?.cell.obj?.data;
-        if (!data) {
-            alert("Problem with data, try to reload viewer.");
+        try {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const formElements = form.elements as typeof form.elements & {
+                start: { value: string };
+                end: { value: string };
+                name: { value: string };
+                style: { value: string };
+            };
+            const start = parseInt(formElements.start.value);
+            const end = parseInt(formElements.end.value);
+            const range = Array.from(
+                { length: end - start },
+                (_, idx) => idx + start
+            );
+
+            const currentSelection = StructureSelectionQuery(
+                "",
+                MS.struct.generator.atomGroups({
+                    "residue-test": MS.core.set.has([
+                        MS.set(...range),
+                        MS.ammp("auth_seq_id"),
+                    ]),
+                    "group-by":
+                        MS.struct.atomProperty.macromolecular.residueKey(),
+                })
+            );
+
+            await plugin.current!.managers?.structure?.component?.add({
+                selection: currentSelection,
+                options: {
+                    checkExisting: true,
+                    label: formElements.name.value,
+                },
+                representation: formElements.style.value,
+            });
+        } catch (error) {
+            console.log(error);
+            alert("An error occurred when creating a new component");
             return;
         }
-
-        const currentSelection = StructureSelectionQuery(
-            "",
-            MS.struct.generator.atomGroups({
-                "residue-test": MS.core.set.has([
-                    MS.set(...range),
-                    MS.ammp("auth_seq_id"),
-                ]),
-                "group-by": MS.struct.atomProperty.macromolecular.residueKey(),
-            })
-        );
-
-        await plugin.current!.managers.structure.component.add({
-            selection: currentSelection,
-            options: { checkExisting: true, label: formElements.name.value },
-            representation: formElements.style.value,
-        });
     }
 
     async function colour(event: React.SyntheticEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const formElements = form.elements as typeof form.elements & {
-            start: { value: string };
-            end: { value: string };
-            colourPicker: { value: string };
-        };
-        const start = parseInt(formElements.start.value);
-        const end = parseInt(formElements.end.value);
-        const range = Array.from(
-            //creates an array of all numbers in [start, end]
-            { length: end - start },
-            (_, idx) => idx + start
-        );
+        try {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const formElements = form.elements as typeof form.elements & {
+                start: { value: string };
+                end: { value: string };
+                colourPicker: { value: string };
+            };
+            const start = parseInt(formElements.start.value);
+            const end = parseInt(formElements.end.value);
+            const range = Array.from(
+                //creates an array of all numbers in [start, end]
+                { length: end - start },
+                (_, idx) => idx + start
+            );
 
-        const data =
-            plugin.current!.managers.structure.hierarchy.current.structures[0]
-                ?.cell.obj?.data;
-        if (!data) {
-            alert("Problem with data, try to reload viewer.");
-            return;
-        }
+            const data =
+                plugin.current!.managers.structure.hierarchy.current
+                    .structures[0]?.cell.obj?.data;
+            if (!data) {
+                alert("Problem with data, try to reload viewer.");
+                return;
+            }
 
-        const selection = Script.getStructureSelection(
-            (Q) =>
-                Q.struct.generator.atomGroups({
-                    "residue-test": Q.core.set.has([
-                        Q.set(...range),
-                        Q.ammp("auth_seq_id"),
-                    ]),
-                    "group-by":
-                        Q.struct.atomProperty.macromolecular.residueKey(),
-                }),
-            data
-        );
-        const lociGetter = async (s: Structure) =>
-            StructureSelection.toLociWithSourceUnits(selection);
+            const selection = Script.getStructureSelection(
+                (Q) =>
+                    Q.struct.generator.atomGroups({
+                        "residue-test": Q.core.set.has([
+                            Q.set(...range),
+                            Q.ammp("auth_seq_id"),
+                        ]),
+                        "group-by":
+                            Q.struct.atomProperty.macromolecular.residueKey(),
+                    }),
+                data
+            );
+            const lociGetter = async (s: Structure) =>
+                StructureSelection.toLociWithSourceUnits(selection);
 
-        for (const s of plugin.current!.managers.structure.hierarchy.current
-            .structures) {
-            const components = s.components;
+            const components =
+                plugin.current!.managers.structure.hierarchy.current
+                    .structures[0].components;
+
             setStructureOverpaint(
                 plugin.current!,
                 components,
@@ -126,6 +131,10 @@ const ViewerOptions: React.FunctionComponent<ViewerOptionsProps> = ({
                 ),
                 lociGetter
             );
+        } catch (error) {
+            console.log(error);
+            alert("An error occurred");
+            return;
         }
     }
 

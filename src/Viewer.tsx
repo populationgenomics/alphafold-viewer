@@ -39,10 +39,9 @@ const Viewer: React.FunctionComponent<ViewerProps> = ({ url, plugin }) => {
 
     useEffect(() => {
         async function init() {
-            const defaultSpec = DefaultPluginUISpec(); // TODO: Make our own to select only essential plugins
+            const defaultSpec = DefaultPluginUISpec();
             const spec: PluginSpec = {
                 actions: defaultSpec.actions,
-                // behaviors: defaultSpec.behaviors,
                 behaviors: [
                     ...defaultSpec.behaviors,
                     PluginSpec.Behavior(AfConfidenceScore, {
@@ -91,6 +90,7 @@ const Viewer: React.FunctionComponent<ViewerProps> = ({ url, plugin }) => {
                     // ],
                 ],
             };
+
             plugin.current = await createPluginAsync(parent.current!, spec);
             setInitialized(true);
         }
@@ -108,21 +108,28 @@ const Viewer: React.FunctionComponent<ViewerProps> = ({ url, plugin }) => {
     }, [initialized, url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     async function loadStructureFromData(url: string) {
-        plugin.current!.clear();
-        const _data = await plugin.current!.builders.data.download(
-            { url: url },
-            { state: { isGhost: true } }
-        );
-
-        const trajectory =
-            await plugin.current!.builders.structure.parseTrajectory(
-                _data,
-                "mmcif"
+        try {
+            plugin.current!.clear();
+            const _data = await plugin.current!.builders.data.download(
+                { url: url },
+                { state: { isGhost: true } }
             );
-        await plugin.current?.builders.structure.hierarchy.applyPreset(
-            trajectory,
-            "default"
-        );
+
+            const trajectory =
+                await plugin.current!.builders.structure.parseTrajectory(
+                    _data,
+                    "mmcif"
+                );
+
+            await plugin.current!.builders.structure.hierarchy.applyPreset(
+                trajectory,
+                "default"
+            );
+        } catch (error) {
+            console.log(error);
+            alert("An error occurred when initialising the viewer");
+            return;
+        }
     }
 
     return (

@@ -1,7 +1,4 @@
-// from https://github.com/PDBeurope/pdbe-molstar/tree/master/src/app/af-confidence
-
 /* eslint-disable camelcase */
-/* esling-disable no-namespace */
 /**
  * Copyright (c) 2018-2020 mol* contributors, licensed under MIT, See LICENSE file for more info.
  *

@@ -1,5 +1,3 @@
-// from https://github.com/PDBeurope/pdbe-molstar/tree/master/src/app/af-confidence
-
 /* eslint-disable no-case-declarations */
 import { OrderedSet } from "molstar/lib/mol-data/int";
 import { Loci } from "molstar/lib/mol-model/loci";

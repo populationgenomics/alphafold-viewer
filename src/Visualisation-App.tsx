@@ -20,48 +20,72 @@ const VisualisationApp: React.FunctionComponent = () => {
     >(null);
 
     async function addAlphafoldColour() {
-        //if alphafold view already exists
-        for (const c of plugin.current!.managers.structure.hierarchy.current
-            .structures[0].components) {
-            if (c.cell.obj?.label === "AlphaFold") {
+        try {
+            const components =
+                plugin.current!.managers.structure.hierarchy.current
+                    .structures[0].components;
+            if (!components) {
+                alert("Error retrieving components");
                 return;
             }
-        }
 
-        //hide all components
-        for (const c of plugin.current!.managers.structure.hierarchy.current
-            .structures[0].components) {
-            setSubtreeVisibility(
-                plugin.current!.state.data,
-                c.cell.transform.ref,
-                true
-            );
-        }
-
-        const structure =
-            plugin.current!.managers.structure.hierarchy.current.models[0]
-                .structures[0].cell;
-
-        const wholeComponent =
-            await plugin.current!.builders.structure.tryCreateComponentStatic(
-                structure,
-                "all",
-                { label: "AlphaFold", tags: ["AlphaFoldInternal"] }
-            );
-
-        const update = plugin.current!.build();
-
-        plugin.current!.builders.structure.representation.buildRepresentation(
-            update,
-            wholeComponent,
-            {
-                type: "cartoon",
-                //@ts-ignore
-                color: "af-confidence",
+            //if alphafold view already exists
+            for (const c of components) {
+                if (c.cell.obj?.label === "AlphaFold") {
+                    return;
+                }
             }
-        );
 
-        await update.commit();
+            //hide all components
+            for (const c of components) {
+                setSubtreeVisibility(
+                    plugin.current!.state.data,
+                    c.cell.transform.ref,
+                    true
+                );
+            }
+
+            const structure =
+                plugin.current!.managers.structure.hierarchy.current.models[0]
+                    .structures[0].cell;
+
+            if (!structure) {
+                alert("Error retrieving structure");
+                return;
+            }
+
+            const wholeComponent =
+                await plugin.current!.builders.structure.tryCreateComponentStatic(
+                    structure,
+                    "all",
+                    { label: "AlphaFold", tags: ["AlphaFoldInternal"] }
+                );
+
+            if (!wholeComponent) {
+                alert("Error creating new component");
+                return;
+            }
+
+            const update = plugin.current!.build();
+
+            plugin.current!.builders.structure.representation.buildRepresentation(
+                update,
+                wholeComponent,
+                {
+                    type: "cartoon",
+                    //@ts-ignore
+                    color: "af-confidence",
+                }
+            );
+
+            await update.commit();
+        } catch (error) {
+            console.log(error);
+            alert(
+                "An error occurred when adding the Alphafold confidence colours"
+            );
+            return;
+        }
     }
 
     return (
@@ -92,6 +116,7 @@ const VisualisationApp: React.FunctionComponent = () => {
                         </div>
                         <div className="molstarProteinToggles">
                             <h4>Load</h4>
+                            {/* these buttons will be re-enabled when they are implemented */}
                             <button className="optionButtons" disabled>
                                 ClinVar LP/P Variants
                             </button>

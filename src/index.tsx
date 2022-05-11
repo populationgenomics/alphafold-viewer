@@ -1,12 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import VisualisationApp from "./Visualisation-App";
+// import VisualisationApp from "./Visualisation-App";
+import ICN3DViewer from "./ICN3D-viewer";
 // import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
     <React.StrictMode>
-        <VisualisationApp />
+        {/* <VisualisationApp /> */}
+        <ICN3DViewer />
     </React.StrictMode>,
     document.getElementById("root")
 );

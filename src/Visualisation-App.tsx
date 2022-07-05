@@ -1,61 +1,66 @@
 import React from "react";
-import Viewer from "./Viewer";
-import ViewerOptions from "./ViewerOptions";
 import "./Visualisation-App.css";
-import { useState } from "react";
-import Searchbar from "./Searchbar";
-import SearchResults from "./SearchResults";
-import LoadCustomOptions from "./LoadCustomOptions";
-import { PluginContext } from "molstar/lib/mol-plugin/context";
-import { SearchResultsHits } from "./SearchResults";
+// import molart from "molart";
+import "molart/dist/molart.js";
+
+function initializeTestDataSet(sequence: string, catName: string) {
+    const ix1 = Math.floor(Math.random() * sequence.length);
+    const ix2 = ix1 + Math.floor(Math.random() * (sequence.length - ix1));
+
+    return {
+        // sequence: sequence,
+        features: [
+            {
+                type: "ACT_SITE",
+                category: catName,
+                begin: String(ix1),
+                end: String(ix1),
+                color: "#00F5B8",
+            },
+            {
+                type: "MY_REGION",
+                category: catName,
+                begin: String(ix1),
+                end: String(ix2),
+                color: "#FF7094",
+            },
+        ],
+    };
+}
 
 const VisualisationApp: React.FunctionComponent = () => {
-    const [url, setUrl] = useState("");
-    // const url = "https://alphafold.ebi.ac.uk/files/AF-P04350-F1-model_v1.cif";
-    const plugin =
-        React.useRef<PluginContext | null>() as React.MutableRefObject<PluginContext | null>;
+    var MolArt = require("molart");
 
-    const [searchResults, setSearchResults] = useState<
-        SearchResultsHits[] | null
-    >(null);
+    const sequence =
+        "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA";
+    const customDataSources = [
+        {
+            source: "RANDOM",
+            useExtension: false,
+            data: initializeTestDataSet(sequence, "MY_CATEGORY1"),
+        },
+        {
+            source: "RANDOM",
+            useExtension: false,
+            data: initializeTestDataSet(sequence, "MY_CATEGORY2"),
+        },
+        // {
+        //     source: "RANDOM",
+        //     useExtension: true,
+        //     url: "http://localhost/externalFeatures_",
+        // },
+    ];
 
-    return (
-        <>
-            <h1>AlphaFold Protein Viewer</h1>
-            <div className="container">
-                <div className="searchArea">
-                    <Searchbar setSearchResults={setSearchResults}></Searchbar>
-                </div>
-                {searchResults && (
-                    <div className="searchResults">
-                        <h4>Results</h4>
-                        <SearchResults
-                            searchResults={searchResults}
-                            url={url}
-                            setUrl={setUrl}
-                        ></SearchResults>
-                    </div>
-                )}
-                {url && (
-                    <>
-                        <div className="molstarViewer">
-                            <Viewer url={url} plugin={plugin}></Viewer>
-                        </div>
-                        <div className="molstarOptions">
-                            <h4>Visualisation Options</h4>
-                            <ViewerOptions plugin={plugin}></ViewerOptions>
-                        </div>
-                        <div className="molstarProteinToggles">
-                            <h4>Load</h4>
-                            <LoadCustomOptions
-                                plugin={plugin}
-                            ></LoadCustomOptions>
-                        </div>
-                    </>
-                )}
-            </div>
-        </>
-    );
+    const test = new MolArt({
+        uniprotId: "O00571",
+        containerId: "pluginContainer",
+        alwaysLoadPredicted: true,
+        defaultStructureId: "AF-O00571-F1",
+        customDataSources: customDataSources,
+    });
+    return <div>Test</div>;
+    //! I hacked this by moving this div to index.html so it can found.
+    // return <div id="pluginContainer"></div>;
 };
 
 export default VisualisationApp;

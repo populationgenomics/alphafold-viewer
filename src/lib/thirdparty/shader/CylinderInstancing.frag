@@ -1,1 +1,0 @@
-$NGL_shaderTextHash['CylinderInstancing.frag'] = $NGL_shaderTextHash['CylinderImpostor.frag'];

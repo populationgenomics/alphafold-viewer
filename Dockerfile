@@ -4,7 +4,7 @@ FROM node:16-buster-slim as builder
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
-ADD package.json package-lock.json .
+ADD package.json package-lock.json ./
 
 # Install dependencies
 RUN npm ci

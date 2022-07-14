@@ -1,0 +1,6 @@
+name: icn3d
+channels:
+    - conda-forge
+dependencies:
+    - yarn
+    - nodejs
